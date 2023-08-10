@@ -8,14 +8,14 @@
 <body>
 <div id="update_notification" class="toast" style="display:none; position: absolute; bottom: 10px; right: 10px;">
     <div class="toast-header">
-        <strong class="me-auto">{{ trans("updater.Update_Available") }}</strong>
+        <strong class="me-auto">{{ trans("updater.UPDATE_AVAILABLE") }}</strong>
         <span id="update_version" class="badge rounded-pill bg-info text-dark"></span>
         <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
     </div>
     <div class="toast-body">
         <span id="update_description"></span>
         <hr>
-        <button type="button" onclick="update();" class="btn btn-info btn-sm update_btn">{{ trans('updater.Update_Now') }}</button>
+        <button type="button" onclick="update();" class="btn btn-info btn-sm update_btn">{{ trans('updater.UPDATE_NOW') }}</button>
     </div>
 </div>
 <script>

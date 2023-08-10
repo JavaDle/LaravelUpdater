@@ -13,6 +13,8 @@ return [
     'SYSTEM_VERSION' => 'Sistem versiyası: ',
     'PERMISSION_DENIED' => 'İstifadəçi yenilikləri həyata keçirmək üçün icazəli deyil.',
     'ALREADY_UPDATED' => 'Sistem ARTIQ SON VERSİYAYA YENİLƏNİB.',
+    'UPDATE_AVAILABLE' => 'Güncəlləmə mövcuddur.',
+    'UPDATE_NOW' => 'Güncəllə.',
     'BACKUP' => 'Yedək qovluğu yaradıldı.',
     'BACKUP_FOUND' => 'Yedək tapıldı: ',
     'DOWNLOADING' => 'Güncəlləmə yüklənir...',

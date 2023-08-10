@@ -13,6 +13,8 @@ return [
     'SYSTEM_VERSION' => 'System\'s version: ',
     'PERMISSION_DENIED' => 'The user is not authorized to perform updates.',
     'ALREADY_UPDATED' => 'The system IS ALREADY UPDATED to last version.',
+    'UPDATE_AVAILABLE' => 'An update is available.',
+    'UPDATE_NOW' => 'Update.',
     'BACKUP' => 'Backup folder created.',
     'BACKUP_FOUND' => 'Backup found: ',
     'DOWNLOADING' => 'Downloading the update...',
