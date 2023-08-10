@@ -1,0 +1,42 @@
+{
+    "name": "javadle/updater",
+    "description": "Updater allows your Laravel application to auto-update itself.",
+    "keywords": [
+        "self-updater",
+        "update-checker",
+        "update-installer",
+        "laravel",
+        "backup-restore"
+    ],
+    "homepage": "https://github.com/JavaDle/laravel-updater",
+    "require": {
+        "php": "^8.0",
+        "illuminate/support": "^8.28 || ^9.0 || ^10.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Husein Javadle",
+            "homepage": "https://github.com/JavaDle",
+            "role": "Full-stack developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "javadle\\updater\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "javadle\\updater\\": "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "javadle\\updater\\UpdaterServiceProvider"
+            ]
+        }
+    }
+}
