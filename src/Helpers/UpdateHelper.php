@@ -123,15 +123,15 @@ class UpdateHelper
 
                     // Исключить файлы
 
-                    if (substr($filename, -1, 1) == '/' || dirname($filename) === $archive || substr($dirname, 0, 2) === '__') {
+                    if (str_ends_with($filename, '/') || dirname($filename) === $archive || str_starts_with($dirname, '__')) {
                         continue;
                     }
 
-                    if (strpos($filename, 'version.txt') !== false) {
+                    if (str_contains($filename, 'version.txt')) {
                         continue;
                     }
 
-                    if (substr($dirname, 0, strlen($archive)) === $archive) {
+                    if (str_starts_with($dirname, $archive)) {
                         $dirname = substr($dirname, (strlen($dirname) - strlen($archive) - 1) * (-1));
                     };
 
@@ -159,7 +159,7 @@ class UpdateHelper
                 }
                 $zip->close();
 
-                if ($execute_commands == true) {
+                if ($execute_commands) {
                     // update-VERSION.php содержит метод main() с возвратом BOOL для проверки его выполнения.
                     afterUpdate();
                     unlink($update_script);
@@ -181,7 +181,7 @@ class UpdateHelper
     /*
     * Загрузка обновления из $update_baseurl в $tmp_folder_name (локальная папка).
     */
-    private function download($filename)
+    private function download($filename): bool|string
     {
         $this->log(trans("updater.DOWNLOADING"), true, 'info');
 
@@ -213,11 +213,10 @@ class UpdateHelper
     public function getCurrentVersion()
     {
         // todo: env file version
-        $version = File::get(base_path() . '/version.txt');
-        return $version;
+        return File::get(base_path() . '/version.txt');
     }
 
-    private function setCurrentVersion($version)
+    private function setCurrentVersion($version): void
     {
         // todo: env file version
         File::put(base_path() . '/version.txt', $version);
@@ -238,15 +237,14 @@ class UpdateHelper
     private function getLastVersion()
     {
         $last_version = file_get_contents(config('updater.update_baseurl') . '/updater.json');
-        $last_version = json_decode($last_version, true);
         // $last_version : ['version' => $v, 'archive' => 'RELEASE-$v.zip', 'description' => 'plainText'];
-        return $last_version;
+        return json_decode($last_version, true);
     }
 
     /*
     * Сделать резервную копию файлов перед выполнением обновления.
     */
-    private function backup($filename)
+    private function backup($filename): void
     {
         if (!isset($this->tmp_backup_dir)) {
             $this->initTmpBackupDir();
@@ -267,7 +265,7 @@ class UpdateHelper
     /*
     * Система восстановления из последней резервной копии.
     */
-    private function recovery()
+    private function recovery(): void
     {
         $this->log(trans("updater.RECOVERY") . '<small>' . $e . '</small>', true, 'info');
 
@@ -288,10 +286,9 @@ class UpdateHelper
         } catch (\Exception $e) {
             $this->log(trans("updater.RECOVERY_ERROR"), true, 'err');
             $this->log(trans("updater.EXCEPTION") . '<small>' . $e->getMessage() . '</small>', true, 'err');
-            return false;
+            return;
         }
 
         $this->log(trans("updater.RECOVERY_SUCCESS"), true, 'info');
-        return true;
     }
 }
