@@ -223,15 +223,6 @@ Updater реализует три основных метода, которые 
 
 ТЕСТ: опубликуйте обновление и обновите страницу, чтобы показать оповещение.
 
-
-## Author
-
-- **Pietro Cinaglia** - Автор оригинала - Свяжитесь с помощью [GitHub](https://github.com/pietrocinaglia) или [LinkedIn](https://linkedin.com/in/pietrocinaglia)
-### Contributors
-
-- **Aura Komputer** - Contact using [GitHub](https://github.com/aurakomputer)
-
-
 ## Лицензия
 
 Этот проект находится под лицензией MIT License — подробности см. в файле [LICENSE](LICENSE).
