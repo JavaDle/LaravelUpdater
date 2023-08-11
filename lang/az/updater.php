@@ -15,6 +15,8 @@ return [
     'ALREADY_UPDATED' => 'Sistem ARTIQ SON VERSİYAYA YENİLƏNİB.',
     'UPDATE_AVAILABLE' => 'Güncəlləmə mövcuddur.',
     'UPDATE_NOW' => 'Güncəllə.',
+    'UPDATING' => 'Güncəllənir.',
+    'UPDATED' => 'Güncəlləndi.',
     'BACKUP' => 'Yedək qovluğu yaradıldı.',
     'BACKUP_FOUND' => 'Yedək tapıldı: ',
     'DOWNLOADING' => 'Güncəlləmə yüklənir...',

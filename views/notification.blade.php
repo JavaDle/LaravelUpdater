@@ -36,14 +36,14 @@
 
     function update() {
         $("#update_description").show();
-        $(".update_btn").html('{{ trans("updater.Updating") }}');
+        $(".update_btn").html('{{ trans("updater.UPDATING") }}');
         $.ajax({
             type: 'GET',
             url: 'updater.update',
             success: function(response) {
                 if (response !== '') {
                     $('#update_description').append(response);
-                    $(".update_btn").html('{{ trans("updater.Updated") }}');
+                    $(".update_btn").html('{{ trans("updater.UPDATED") }}');
                     $(".update_btn").attr("onclick", "");
                 }
             },

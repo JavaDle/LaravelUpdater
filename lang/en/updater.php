@@ -15,6 +15,8 @@ return [
     'ALREADY_UPDATED' => 'The system IS ALREADY UPDATED to last version.',
     'UPDATE_AVAILABLE' => 'An update is available.',
     'UPDATE_NOW' => 'Update.',
+    'UPDATING' => 'Updating.',
+    'UPDATED' => 'Updated.',
     'BACKUP' => 'Backup folder created.',
     'BACKUP_FOUND' => 'Backup found: ',
     'DOWNLOADING' => 'Downloading the update...',
