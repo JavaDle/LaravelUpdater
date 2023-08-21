@@ -38,6 +38,7 @@ return [
     'TEMP_CLEANED' => 'Müvəqqəti qovluq silindi',
     'Changes' => 'Dəyişikliklər',
     'Cancel' => 'Ləğv et',
+    'Version' => 'Versiya',
 ];
 
 

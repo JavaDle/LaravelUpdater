@@ -15,12 +15,12 @@
                     Swal.fire({
                         title: '@lang('updater.UPDATE_AVAILABLE')',
                         html:
-                            `<h1>@lang('Version'): ${response.version}</h1>` +
-                            `<p>@lang('Changes'): <br> ${response.description}</p>`,
+                            `<h1>@lang('updater.Version'): ${response.version}</h1>` +
+                            `<p>@lang('updater.Changes'): <br> ${response.description}</p>`,
                         icon: 'info',
                         showCancelButton: true,
                         confirmButtonText: '@lang('updater.UPDATE_NOW')',
-                        denyButtonText: `@lang('Cancel')`,
+                        cancelButtonText: `@lang('updater.Cancel')`,
                     }).then((result) => {
                         if (result.isConfirmed) {
                             $.ajax({
