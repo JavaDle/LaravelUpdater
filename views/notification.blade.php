@@ -1,23 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-<div id="update_notification" class="toast" style="display:none; position: absolute; bottom: 10px; right: 10px;">
-    <div class="toast-header">
-        <strong class="me-auto">{{ trans("updater.UPDATE_AVAILABLE") }}</strong>
-        <span id="update_version" class="badge rounded-pill bg-info text-dark"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-    </div>
-    <div class="toast-body">
-        <span id="update_description"></span>
-        <hr>
-        <button type="button" onclick="update();" class="btn btn-info btn-sm update_btn">{{ trans('updater.UPDATE_NOW') }}</button>
-    </div>
-</div>
+@if(config('updater.enable_jquery'))
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+@endif
+@if(config('updater.enable_sweet_alert2'))
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@endif
 <script>
     $(document).ready(function() {
         $.ajax({
@@ -26,35 +12,46 @@
             async: false,
             success: function(response) {
                 if (response !== '') {
-                    $('#update_version').text(response.version);
-                    $('#update_description').text(response.description);
-                    $('#update_notification').show();
+                    Swal.fire({
+                        title: '@lang('updater.UPDATE_AVAILABLE')',
+                        html:
+                            `<h1>Version: ${response.version}</h1>` +
+                            `<p>Change Log: <br> ${response.description}</p>`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: '@lang('updater.UPDATE_NOW')',
+                        denyButtonText: `@lang('Cancel')`,
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                type: 'GET',
+                                url: 'updater.update',
+                                success: function(response) {
+                                    if (response !== '') {
+                                        Swal.fire({
+                                            title: '@lang('updater.UPDATED')',
+                                            html:
+                                                `<p>${response}</p>`,
+                                            icon: 'info',
+                                        })
+                                    }
+                                },
+                                error: function(response) {
+                                    if (response !== '') {
+                                        Swal.fire({
+                                            title: '@lang('updater.error_try_again')',
+                                            html:
+                                                `<p>${response}</p>`,
+                                            icon: 'info',
+                                            showCancelButton: false,
+                                        })
+                                    }
+                                }
+                            });
+                        }
+                    })
                 }
             }
         });
     });
-
-    function update() {
-        $("#update_description").show();
-        $(".update_btn").html('{{ trans("updater.UPDATING") }}');
-        $.ajax({
-            type: 'GET',
-            url: 'updater.update',
-            success: function(response) {
-                if (response !== '') {
-                    $('#update_description').append(response);
-                    $(".update_btn").html('{{ trans("updater.UPDATED") }}');
-                    $(".update_btn").attr("onclick", "");
-                }
-            },
-            error: function(response) {
-                if (response !== '') {
-                    $('#update_description').append(response);
-                    $(".update_btn").html('{{ trans("updater.error_try_again") }}');
-                }
-            }
-        });
-    }
 </script>
-</body>
-</html>

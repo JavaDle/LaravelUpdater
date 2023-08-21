@@ -2,15 +2,15 @@
 
 namespace javadle\updater\Helpers;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class UpdateHelper
 {
-    private $tmp_backup_dir = null;
-    private $response_html = '';
+    private ?string $tmp_backup_dir = null;
+    private ?string $response_html = '';
 
 
     private function initTmpBackupDir(): void
@@ -22,8 +22,9 @@ class UpdateHelper
     {
         //Response HTML
         if ($append_response) {
-            $this->response_html .= $msg . "<BR>";
+            $this->response_html .= $msg . "<br>";
         }
+
         //Log
         $header = "Updater - ";
         if ($type == 'info') {
@@ -37,9 +38,9 @@ class UpdateHelper
         }
 
         if (app()->runningInConsole()) {
-            dump($header . ' - ' . $msg);
+            dump($msg);
         } else {
-            echo($header . ' - ' . $msg . "<br/>");
+            echo($msg . "<br/>");
         }
     }
 
@@ -48,13 +49,10 @@ class UpdateHelper
     */
     public function update(): void
     {
-        $this->log(trans("updater.SYSTEM_VERSION") . $this->getCurrentVersion(), true, 'info');
-
         $last_version_info = $this->getLastVersion();
-        $last_version = null;
 
         if ($last_version_info['version'] <= $this->getCurrentVersion()) {
-            $this->log(trans("updater.ALREADY_UPDATED"), true, 'info');
+            $this->log(trans("updater.ALREADY_UPDATED"), true);
             return;
         }
 
@@ -64,22 +62,26 @@ class UpdateHelper
                 return;
             }
 
-            Artisan::call('down'); // Включение режима обслуживания
-            $this->log(trans("updater.MAINTENANCE_MODE_ON"), true, 'info');
+            // Включение режима обслуживания
+            Artisan::call('down');
+            $this->log(trans("updater.MAINTENANCE_MODE_ON"), true);
 
-            if (($status = $this->install($last_version)) === false) {
+            if (($this->install($last_version)) === false) {
                 $this->log(trans("updater.INSTALLATION_ERROR"), true, 'err');
                 return;
             }
 
             $this->setCurrentVersion($last_version_info['version']); //update system version
-            $this->log(trans("updater.INSTALLATION_SUCCESS"), true, 'info');
+            $this->log(trans("updater.INSTALLATION_SUCCESS"), true);
 
-            $this->log(trans("updater.SYSTEM_VERSION") . $this->getCurrentVersion(), true, 'info');
+            $this->log(trans("updater.SYSTEM_VERSION") . $this->getCurrentVersion(), true);
 
-            Artisan::call('up'); // Выключение режима обслуживания
-            $this->log(trans("updater.MAINTENANCE_MODE_OFF"), true, 'info');
+            // Выключение режима обслуживания
+            Artisan::call('up');
+            $this->log(trans("updater.MAINTENANCE_MODE_OFF"), true);
+
         } catch (\Exception $e) {
+
             $this->log(trans("updater.EXCEPTION") . '<small>' . $e->getMessage() . '</small>', true, 'err');
             $this->recovery();
 
@@ -88,7 +90,7 @@ class UpdateHelper
         }
     }
 
-    private function install($archive)
+    private function install($archive): bool
     {
         try {
             $execute_commands = false;
@@ -101,7 +103,9 @@ class UpdateHelper
 
                 // проверить, существует ли update_script
                 $update_script_content = $zip->getFromName(config('updater.script_filename'));
+
                 print($update_script_content);
+
                 if ($update_script_content) {
                     File::put($update_script, $update_script_content);
 
@@ -113,8 +117,11 @@ class UpdateHelper
                     beforeUpdate();
                 }
 
+                $goods = config('updater.show_change_log_for_users') ?? [];
 
-                $this->log(trans("updater.CHANGELOG"), true, 'info');
+                if (in_array(auth()->user()->getAttribute('email'), $goods)) {
+                    $this->log(trans("updater.CHANGELOG"), true);
+                }
 
 
                 for ($indexFile = 0; $indexFile < $zip->numFiles; $indexFile++) {
@@ -122,7 +129,6 @@ class UpdateHelper
                     $dirname = dirname($filename);
 
                     // Исключить файлы
-
                     if (str_ends_with($filename, '/') || dirname($filename) === $archive || str_starts_with($dirname, '__')) {
                         continue;
                     }
@@ -133,42 +139,53 @@ class UpdateHelper
 
                     if (str_starts_with($dirname, $archive)) {
                         $dirname = substr($dirname, (strlen($dirname) - strlen($archive) - 1) * (-1));
-                    };
-
-
-                    $filename = $dirname . '/' . basename($filename); //установить новый путь очистки для текущего файла
-
-                    if (!is_dir(base_path() . '/' . $dirname)) { //Создать НОВЫЙ каталог (если он существует и в текущей версии, продолжить...)
-                        File::makeDirectory(base_path() . '/' . $dirname, 0755, true, true);
-                        $this->log(trans("updater.DIRECTORY_CREATED") . $dirname, true, 'info');
                     }
 
-                    if (!is_dir(base_path() . '/' . $filename)) { //Перезаписать файл его последней версией
+
+                    //установить новый путь очистки для текущего файла
+                    $filename = $dirname . '/' . basename($filename);
+
+                    //Создать новый каталог (если он существует и в текущей версии, продолжить...)
+                    if (!is_dir(base_path() . '/' . $dirname)) {
+                        File::makeDirectory(base_path() . '/' . $dirname, 0755, true, true);
+                        if (in_array(auth()->user()->getAttribute('email'), $goods)) {
+                            $this->log(trans("updater.DIRECTORY_CREATED") . $dirname, true);
+                        }
+                    }
+
+                    //Перезаписать файл его последней версией
+                    if (!is_dir(base_path() . '/' . $filename)) {
                         $contents = $zip->getFromIndex($indexFile);
                         $contents = str_replace("\r\n", "\n", $contents);
                         if (File::exists(base_path() . '/' . $filename)) {
-                            $this->log(trans("updater.FILE_EXIST") . $filename, true, 'info');
-                            $this->backup($filename); //сохраняем текущую версию
+                            if (in_array(auth()->user()->getAttribute('email'), $goods)) {
+                                $this->log(trans("updater.FILE_EXIST") . $filename, true);
+                            }
+                            //сохраняем текущую версию
+                            $this->backup($filename);
                         }
-
-                        $this->log(trans("updater.FILE_COPIED") . $filename, true, 'info');
+                        if (in_array(auth()->user()->getAttribute('email'), $goods)) {
+                            $this->log(trans("updater.FILE_COPIED") . $filename, true);
+                        }
 
                         File::put(base_path() . '/' . $filename, $contents);
                         unset($contents);
                     }
                 }
+
                 $zip->close();
 
                 if ($execute_commands) {
-                    // update-VERSION.php содержит метод main() с возвратом BOOL для проверки его выполнения.
+                    // upgrade.php содержит метод main() с возвратом BOOL для проверки его выполнения.
                     afterUpdate();
                     unlink($update_script);
-                    $this->log(trans("updater.EXECUTE_UPDATE_SCRIPT") . ' (\'upgrade.php\')', true, 'info');
+                    $this->log(trans("updater.EXECUTE_UPDATE_SCRIPT") . ' (\'upgrade.php\')', true);
                 }
 
                 File::delete($archive);
                 File::deleteDirectory($this->tmp_backup_dir);
-                $this->log(trans("updater.TEMP_CLEANED"), true, 'info');
+
+                $this->log(trans("updater.TEMP_CLEANED"), true);
             }
         } catch (\Exception $e) {
             $this->log(trans("updater.EXCEPTION") . '<small>' . $e->getMessage() . '</small>', true, 'err');
@@ -183,27 +200,28 @@ class UpdateHelper
     */
     private function download($filename): bool|string
     {
-        $this->log(trans("updater.DOWNLOADING"), true, 'info');
-
+        $this->log(trans("updater.DOWNLOADING"), true);
         $tmp_folder_name = base_path() . '/' . config('updater.tmp_folder_name');
 
         if (!is_dir($tmp_folder_name)) {
-            File::makeDirectory($tmp_folder_name, $mode = 0755, true, true);
+            File::makeDirectory($tmp_folder_name, 0755, true, true);
         }
 
         try {
+
             $local_file = $tmp_folder_name . '/' . $filename;
             $remote_file_url = config('updater.update_baseurl') . '/' . $filename;
 
             $update = file_get_contents($remote_file_url);
             file_put_contents($local_file, $update);
+
         } catch (\Exception $e) {
             $this->log(trans("updater.DOWNLOADING_ERROR"), true, 'err');
             $this->log(trans("updater.EXCEPTION") . '<small>' . $e->getMessage() . '</small>', true, 'err');
             return false;
         }
 
-        $this->log(trans("updater.DOWNLOADING_SUCCESS"), true, 'info');
+        $this->log(trans("updater.DOWNLOADING_SUCCESS"), true);
         return $local_file;
     }
 
@@ -237,7 +255,6 @@ class UpdateHelper
     private function getLastVersion()
     {
         $last_version = file_get_contents(config('updater.update_baseurl') . '/updater.json');
-        // $last_version : ['version' => $v, 'archive' => 'RELEASE-$v.zip', 'description' => 'plainText'];
         return json_decode($last_version, true);
     }
 
@@ -252,14 +269,15 @@ class UpdateHelper
 
         $backup_dir = $this->tmp_backup_dir;
         if (!is_dir($backup_dir)) {
-            File::makeDirectory($backup_dir, $mode = 0755, true, true);
+            File::makeDirectory($backup_dir, 0755, true, true);
         }
 
         if (!is_dir($backup_dir . '/' . dirname($filename))) {
-            File::makeDirectory($backup_dir . '/' . dirname($filename), $mode = 0755, true, true);
+            File::makeDirectory($backup_dir . '/' . dirname($filename), 0755, true, true);
         }
 
-        File::copy(base_path() . '/' . $filename, $backup_dir . '/' . $filename); //to backup folder
+        //сохранение в резервную папку
+        File::copy(base_path() . '/' . $filename, $backup_dir . '/' . $filename);
     }
 
     /*
@@ -267,12 +285,11 @@ class UpdateHelper
     */
     private function recovery(): void
     {
-        $this->log(trans("updater.RECOVERY") . '<small>' . $e . '</small>', true, 'info');
+        $this->log(trans("updater.RECOVERY") . '<small>' . $e . '</small>', true);
 
         if (!isset($this->tmp_backup_dir)) {
-            ;
             $this->initTmpBackupDir();
-            $this->log(trans("updater.BACKUP_FOUND") . '<small>' . $this->tmp_backup_dir . '</small>', true, 'info');
+            $this->log(trans("updater.BACKUP_FOUND") . '<small>' . $this->tmp_backup_dir . '</small>', true);
         }
 
         try {
@@ -289,6 +306,6 @@ class UpdateHelper
             return;
         }
 
-        $this->log(trans("updater.RECOVERY_SUCCESS"), true, 'info');
+        $this->log(trans("updater.RECOVERY_SUCCESS"), true);
     }
 }
