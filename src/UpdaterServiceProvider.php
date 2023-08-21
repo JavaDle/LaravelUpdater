@@ -17,6 +17,15 @@ class UpdaterServiceProvider extends ServiceProvider
     {
         $this->publishes([__DIR__ . '/../config/updater.php' => config_path('updater.php'),], 'updater');
         $this->publishes([__DIR__ . '/../lang' => lang_path()], 'updater');
+
+        $this->publishes([
+            __DIR__.'/../public/javadle/updater/sweetalert2.js' => public_path('javadle/updater/sweetalert2.js')
+        ], 'javadle-updater');
+
+        $this->publishes([
+            __DIR__.'/../public/javadle/updater/jquery-3.7.0.min.js' => public_path('javadle/updater/jquery-3.7.0.min.js')
+        ], 'javadle-updater');
+
         $this->publishes([__DIR__ . '/../views' => resource_path('views/vendor/updater')], 'updater');
 
         $this->loadRoutesFrom(__DIR__ . '/Http/routes.php');
