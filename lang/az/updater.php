@@ -36,6 +36,8 @@ return [
     'FILE_COPIED' => 'Fayl kopyalandı: ',
     'EXECUTE_UPDATE_SCRIPT' => 'Yeniləməyə daxil edilən skripti icra edin',
     'TEMP_CLEANED' => 'Müvəqqəti qovluq silindi',
+    'Changes' => 'Dəyişikliklər',
+    'Cancel' => 'Ləğv et',
 ];
 
 
